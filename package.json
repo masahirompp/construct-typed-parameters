@@ -1,0 +1,79 @@
+{
+  "name": "construct-typed-parameters",
+  "version": "0.0.0-development",
+  "description": "Type-safe parameter construction library. Useful for managing environment variables, aws parameter stores and more.",
+  "main": "./lib/src/index.js",
+  "files": [
+    "lib/**/*"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf ./lib/",
+    "cm": "cz",
+    "coverage": "codecov",
+    "lint": "eslint ./src/ --fix",
+    "prepare": "husky install",
+    "semantic-release": "semantic-release",
+    "test:watch": "jest --watch",
+    "test": "jest --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/masahirompp/construct-typed-parameters.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "masahirompp",
+    "email": "masahirompp@users.noreply.github.com",
+    "url": "https://github.com/masahirompp"
+  },
+  "engines": {
+    "node": ">=12.0"
+  },
+  "keywords": [
+    "typescript",
+    "parse",
+    "stringify",
+    "environment variable",
+    "parameter store"
+  ],
+  "bugs": {
+    "url": "https://github.com/masahirompp/construct-typed-parameters/issues"
+  },
+  "homepage": "https://github.com/masahirompp/construct-typed-parameters#readme",
+  "devDependencies": {
+    "@types/jest": "^27.5.0",
+    "@types/node": "^17.0.31",
+    "@typescript-eslint/eslint-plugin": "^5.22.0",
+    "@typescript-eslint/parser": "^5.22.0",
+    "codecov": "^3.8.2",
+    "commitizen": "^1.0.4",
+    "cz-conventional-changelog": "^3.0.1",
+    "eslint": "^8.14.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "husky": "^7.0.4",
+    "jest": "^28.0.3",
+    "lint-staged": "^12.4.1",
+    "prettier": "^2.6.2",
+    "semantic-release": "^19.0.2",
+    "ts-jest": "^28.0.1",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.4"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "lint-staged": {
+    "*.ts": "eslint --cache --cache-location .eslintcache --fix"
+  },
+  "release": {
+    "branches": [
+      "main"
+    ]
+  }
+}
