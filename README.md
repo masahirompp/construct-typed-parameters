@@ -50,19 +50,25 @@ const parsedParameters = parameters.parse({
 //=> { TOKEN: 'xxxx', FIREBASE_CONFIG: { apiKey: 'xxxx' } }
 ```
 
-### API
+## API
 
 see `test/index.spec.ts`.
 
+### createTypedParameters
+
 ```ts
-import { createTypedParameters } from 'construct-typed-parameters';
+import {
+  createTypedParameters,
+  TypedParametersConstruct,
+} from 'construct-typed-parameters';
 
-// type ParameterValidate<T> = (value: T) => string | string[] | null;
-
-const parameters = createTypedParameters(pt => ({
+const parameters: TypedParametersConstruct<T> = createTypedParameters(pt => ({
   stringValue: pt.String({
+    // required: boolean
     required: true,
+    // defaultValue?: T1
     defaultValue: 'xxxx',
+    // validate?: (value: T1) => string | string[] | null;
     validate: v => (v.includes('x') ? null : 'the value must contain x'),
   }),
   unionStringValue: pt.UnionString<'v1' | 'v2'>({
@@ -97,6 +103,28 @@ const parameters = createTypedParameters(pt => ({
     validate: v => (v.length ? [] : ['array must not empty']),
   }),
 }));
+```
+
+### TypedParametersConstruct#parse
+
+```ts
+const parameters: TypedParametersConstruct<T> = createTypedParameters(pt => ({ ... }));
+
+parameters.parse(
+  stringifiedParameters: Partial<StringifiedParameters<T>>,
+  shouldValidate = true
+) : ParsedParameters<T>
+```
+
+### TypedParametersConstruct#stringify
+
+```ts
+const parameters: TypedParametersConstruct<T> = createTypedParameters(pt => ({ ... }));
+
+parameters.stringify(
+  parsedParameters: Partial<ParsedParameters<T>>,
+  shouldValidate = true
+) : StringifiedParameters<T>
 ```
 
 [build-img]: https://github.com/masahirompp/construct-typed-parameters/actions/workflows/release.yml/badge.svg

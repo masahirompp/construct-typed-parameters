@@ -41,6 +41,10 @@ describe('index', () => {
       );
     });
 
+    it('parse required error but should not validate', () => {
+      expect(parameters.parse({}, false)).toEqual({});
+    });
+
     it('stringify', () => {
       expect(
         parameters.stringify({
@@ -68,6 +72,10 @@ describe('index', () => {
       expect(() => parameters.stringify({})).toThrow(
         'stringValue is required, unionStringValue is required, numberValue is required, unionNumberValue is required, booleanValue is required, jsonValue is required, arrayValue is required.'
       );
+    });
+
+    it('stringify required error but should not validate', () => {
+      expect(parameters.stringify({}, false)).toEqual({});
     });
   });
 
@@ -401,6 +409,33 @@ describe('index', () => {
       );
     });
 
+    it('parse validation error but should not validate', () => {
+      expect(
+        parameters.parse(
+          {
+            stringValue: 'yyyy',
+            unionStringValue: 'v3',
+            numberValue: '0',
+            unionNumberValue: '-1',
+            booleanValue: 'false',
+            jsonValue: '{"apiKey":""}',
+            arrayValue: '[]',
+          },
+          false
+        )
+      ).toEqual({
+        arrayValue: [],
+        booleanValue: false,
+        jsonValue: {
+          apiKey: '',
+        },
+        numberValue: 0,
+        stringValue: 'yyyy',
+        unionNumberValue: -1,
+        unionStringValue: 'v3',
+      });
+    });
+
     it('parse required error and validation error', () => {
       expect(() =>
         parameters.parse({
@@ -412,6 +447,25 @@ describe('index', () => {
       ).toThrow(
         'unionStringValue is required, unionNumberValue is required, jsonValue is required. stringValue: the value must contain x, numberValue: value must not be 0, booleanValue: the value must be true, arrayValue: array must not empty.'
       );
+    });
+
+    it('parse required error and validation error, but should not validaet', () => {
+      expect(
+        parameters.parse(
+          {
+            stringValue: 'yyyy',
+            numberValue: '0',
+            booleanValue: 'false',
+            arrayValue: '[]',
+          },
+          false
+        )
+      ).toEqual({
+        stringValue: 'yyyy',
+        numberValue: 0,
+        booleanValue: false,
+        arrayValue: [],
+      });
     });
 
     it('stringify', () => {
@@ -463,6 +517,31 @@ describe('index', () => {
       );
     });
 
+    it('stringify validation error but should not validate', () => {
+      expect(
+        parameters.stringify(
+          {
+            stringValue: 'yyyy',
+            unionStringValue: 'v3' as never,
+            numberValue: 0,
+            unionNumberValue: -1 as never,
+            booleanValue: false,
+            jsonValue: { apiKey: '' },
+            arrayValue: [],
+          },
+          false
+        )
+      ).toEqual({
+        stringValue: 'yyyy',
+        unionStringValue: 'v3',
+        numberValue: '0',
+        unionNumberValue: '-1',
+        booleanValue: 'false',
+        jsonValue: '{"apiKey":""}',
+        arrayValue: '[]',
+      });
+    });
+
     it('stringify required error and validation error', () => {
       expect(() =>
         parameters.stringify({
@@ -473,6 +552,23 @@ describe('index', () => {
       ).toThrow(
         'stringValue is required, numberValue is required, booleanValue is required, arrayValue is required. unionStringValue: the value must be v1 or v2, unionNumberValue: the value must be 0 or 1, jsonValue: apiKey must be specified.'
       );
+    });
+
+    it('stringify required error and validation error, but should not validate', () => {
+      expect(
+        parameters.stringify(
+          {
+            unionStringValue: 'v3' as never,
+            unionNumberValue: -1 as never,
+            jsonValue: { apiKey: '' },
+          },
+          false
+        )
+      ).toEqual({
+        unionStringValue: 'v3',
+        unionNumberValue: '-1',
+        jsonValue: '{"apiKey":""}',
+      });
     });
   });
 });

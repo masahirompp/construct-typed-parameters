@@ -136,14 +136,17 @@ const ParameterType = {
 class TypedParameters<T extends Record<string, ParameterConstruct<any>>> {
   constructor(private parametersConstruct: T) {}
 
-  parse(serializedParameters: Partial<StringifiedParameters<T>>) {
+  parse(
+    stringifiedParameters: Partial<StringifiedParameters<T>>,
+    shouldValidate = true
+  ) {
     const requiredErrorParameters: string[] = [];
     const validationErrorParameterMap: Record<string, string[]> = {};
     const result = Object.entries(this.parametersConstruct).reduce<
       ParsedParameters<T>
     >((payload, [parameterName, construct]) => {
       const value = (() => {
-        const serialized = serializedParameters[parameterName];
+        const serialized = stringifiedParameters[parameterName];
         const parsedValue =
           typeof serialized === 'string'
             ? construct.parse(serialized)
@@ -156,13 +159,17 @@ class TypedParameters<T extends Record<string, ParameterConstruct<any>>> {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           return construct.defaultValue;
         }
-        if (construct.required) {
+        if (shouldValidate && construct.required) {
           requiredErrorParameters.push(parameterName);
         }
         return undefined;
       })();
 
-      if (value != null && typeof construct.validate === 'function') {
+      if (
+        shouldValidate &&
+        value != null &&
+        typeof construct.validate === 'function'
+      ) {
         const validationError = construct.validate(value);
         if (validationError) {
           if (Array.isArray(validationError)) {
@@ -188,23 +195,30 @@ class TypedParameters<T extends Record<string, ParameterConstruct<any>>> {
       throw new ParameterError(
         requiredErrorParameters,
         validationErrorParameterMap,
-        serializedParameters,
+        stringifiedParameters,
         result
       );
     }
     return result;
   }
 
-  stringify(parameters: Partial<ParsedParameters<T>>) {
+  stringify(
+    parsedParameters: Partial<ParsedParameters<T>>,
+    shouldValidate = true
+  ) {
     const requiredErrorParameters: string[] = [];
     const validationErrorParameterMap: Record<string, string[]> = {};
     const result = Object.entries(this.parametersConstruct).reduce<
       StringifiedParameters<T>
     >((payload, [parameterName, construct]) => {
       const serialized = (() => {
-        const value = parameters[parameterName];
+        const value = parsedParameters[parameterName];
 
-        if (value != null && typeof construct.validate === 'function') {
+        if (
+          shouldValidate &&
+          value != null &&
+          typeof construct.validate === 'function'
+        ) {
           const validationError = construct.validate(value);
           if (validationError) {
             if (Array.isArray(validationError)) {
@@ -230,7 +244,7 @@ class TypedParameters<T extends Record<string, ParameterConstruct<any>>> {
             return serializedDefaultValue;
           }
         }
-        if (construct.required) {
+        if (shouldValidate && construct.required) {
           requiredErrorParameters.push(parameterName);
         }
         return undefined;
@@ -250,7 +264,7 @@ class TypedParameters<T extends Record<string, ParameterConstruct<any>>> {
         requiredErrorParameters,
         validationErrorParameterMap,
         result,
-        parameters
+        parsedParameters
       );
     }
     return result;
