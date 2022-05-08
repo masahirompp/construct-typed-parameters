@@ -50,6 +50,10 @@ const parsedParameters = parameters.parse({
 //=> { TOKEN: 'xxxx', FIREBASE_CONFIG: { apiKey: 'xxxx' } }
 ```
 
+## AutoCompletion
+
+![AutoCompletion](https://github.com/masahirompp/construct-typed-parameters/blob/image/autocompletion.png?raw=true)
+
 ## API
 
 see `test/index.spec.ts`.
