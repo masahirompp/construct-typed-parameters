@@ -257,8 +257,12 @@ class TypedParameters<T extends Record<string, ParameterConstruct<any>>> {
   }
 }
 
-export const createTypedParameters = <
+export type TypedParametersConstruct<
+  T extends Record<string, ParameterConstruct<any>>
+> = TypedParameters<T>;
+
+export const createTypedParameters: <
   T extends Record<string, ParameterConstruct<any>>
 >(
-  t: (parameterType: typeof ParameterType) => T
-) => new TypedParameters(t(ParameterType));
+  f: (parameterType: typeof ParameterType) => T
+) => TypedParametersConstruct<T> = f => new TypedParameters(f(ParameterType));
