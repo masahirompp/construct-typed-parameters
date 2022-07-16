@@ -133,8 +133,16 @@ const ParameterType = {
   Custom: createParameterConstruct,
 };
 
-class TypedParameters<T extends Record<string, ParameterConstruct<any>>> {
-  constructor(private parametersConstruct: T) {}
+export class TypedParameters<
+  T extends Record<string, ParameterConstruct<any>>
+> {
+  private readonly parametersConstruct: T;
+
+  constructor(
+    defineParametersConstruct: (parameterType: typeof ParameterType) => T
+  ) {
+    this.parametersConstruct = defineParametersConstruct(ParameterType);
+  }
 
   parse(
     stringifiedParameters: Partial<StringifiedParameters<T>>,
@@ -270,13 +278,3 @@ class TypedParameters<T extends Record<string, ParameterConstruct<any>>> {
     return result;
   }
 }
-
-export type TypedParametersConstruct<
-  T extends Record<string, ParameterConstruct<any>>
-> = TypedParameters<T>;
-
-export const createTypedParameters: <
-  T extends Record<string, ParameterConstruct<any>>
->(
-  f: (parameterType: typeof ParameterType) => T
-) => TypedParametersConstruct<T> = f => new TypedParameters(f(ParameterType));

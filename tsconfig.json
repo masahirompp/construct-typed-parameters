@@ -17,7 +17,7 @@
     "strict": true,
     "target": "esnext",
     "traceResolution": false,
-    "types": ["jest"]
+    "types": ["jest", "node"]
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts"]
 }

@@ -1,8 +1,8 @@
-import { createTypedParameters, ParameterError } from '../src/index';
+import { TypedParameters, ParameterError } from '../src/index';
 
 describe('index', () => {
   describe('all required without defaultValue.', () => {
-    const parameters = createTypedParameters(pt => ({
+    const parameters = new TypedParameters(pt => ({
       stringValue: pt.String({ required: true }),
       unionStringValue: pt.UnionString<'v1' | 'v2'>({ required: true }),
       numberValue: pt.Number({ required: true }),
@@ -80,7 +80,7 @@ describe('index', () => {
   });
 
   describe('all required with defaultValue.', () => {
-    const parameters = createTypedParameters(pt => ({
+    const parameters = new TypedParameters(pt => ({
       stringValue: pt.String({ required: true, defaultValue: 'xxxx' }),
       unionStringValue: pt.UnionString<'v1' | 'v2'>({
         required: true,
@@ -172,7 +172,7 @@ describe('index', () => {
   });
 
   describe('all optional without defaultValue.', () => {
-    const parameters = createTypedParameters(pt => ({
+    const parameters = new TypedParameters(pt => ({
       stringValue: pt.String({ required: false }),
       unionStringValue: pt.UnionString<'v1' | 'v2'>({ required: false }),
       numberValue: pt.Number({ required: false }),
@@ -236,7 +236,7 @@ describe('index', () => {
   });
 
   describe('all optional with defaultValue.', () => {
-    const parameters = createTypedParameters(pt => ({
+    const parameters = new TypedParameters(pt => ({
       stringValue: pt.String({ required: false, defaultValue: 'xxxx' }),
       unionStringValue: pt.UnionString<'v1' | 'v2'>({
         required: false,
@@ -328,7 +328,7 @@ describe('index', () => {
   });
 
   describe('validation.', () => {
-    const parameters = createTypedParameters(pt => ({
+    const parameters = new TypedParameters(pt => ({
       stringValue: pt.String({
         required: true,
         validate: v => (v.includes('x') ? null : 'the value must contain x'),
@@ -569,6 +569,83 @@ describe('index', () => {
         unionNumberValue: '-1',
         jsonValue: '{"apiKey":""}',
       });
+    });
+  });
+});
+
+describe('with query parameters', () => {
+  const parameters = new TypedParameters(pt => ({
+    TOKEN: pt.String({ required: true }),
+    FIREBASE_CONFIG: pt.Json<{ apiKey: string }>({ required: true }),
+  }));
+
+  it('make query parameters', () => {
+    expect(
+      new URLSearchParams(
+        parameters.stringify({
+          TOKEN: 'xxxx',
+          FIREBASE_CONFIG: { apiKey: 'xxxx' },
+        })
+      ).toString()
+    ).toEqual('TOKEN=xxxx&FIREBASE_CONFIG=%7B%22apiKey%22%3A%22xxxx%22%7D');
+  });
+
+  it('make parameters from query parameters', () => {
+    expect(
+      parameters.parse(
+        Object.fromEntries(
+          new URLSearchParams(
+            'TOKEN=xxxx&FIREBASE_CONFIG=%7B%22apiKey%22%3A%22xxxx%22%7D'
+          ).entries()
+        )
+      )
+    ).toEqual({
+      TOKEN: 'xxxx',
+      FIREBASE_CONFIG: { apiKey: 'xxxx' },
+    });
+  });
+});
+
+describe('with environment variables', () => {
+  const OLD_ENV = process.env;
+
+  beforeEach(() => {
+    jest.resetModules(); // Most important - it clears the cache
+    process.env = { ...OLD_ENV }; // Make a copy
+  });
+
+  afterAll(() => {
+    process.env = OLD_ENV; // Restore old environment
+  });
+
+  const parameters = new TypedParameters(pt => ({
+    TOKEN: pt.String({ required: true }),
+    FIREBASE_CONFIG: pt.Json<{ apiKey: string }>({ required: true }),
+  }));
+
+  it('set and load environment variables', () => {
+    Object.entries(
+      parameters.stringify({
+        TOKEN: 'xxxx',
+        FIREBASE_CONFIG: { apiKey: 'xxxx' },
+      })
+    ).forEach(([parameterName, stringifiedValue]) => {
+      process.env[parameterName] = stringifiedValue;
+    });
+
+    // set environment variables
+    expect(process.env.TOKEN).toEqual('xxxx');
+    expect(process.env.FIREBASE_CONFIG).toEqual('{"apiKey":"xxxx"}');
+
+    // load environment variables
+    expect(
+      parameters.parse({
+        TOKEN: process.env.TOKEN,
+        FIREBASE_CONFIG: process.env.FIREBASE_CONFIG,
+      })
+    ).toEqual({
+      TOKEN: 'xxxx',
+      FIREBASE_CONFIG: { apiKey: 'xxxx' },
     });
   });
 });

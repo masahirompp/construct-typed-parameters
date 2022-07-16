@@ -8,7 +8,7 @@
 [![Commitizen Friendly][commitizen-img]][commitizen-url]
 [![Semantic Release][semantic-release-img]][semantic-release-url]
 
-> Type-safe parameter construction library. Useful for managing environment variables, aws parameter stores and more.
+> Type-safe parameters construction library. Useful for managing Query Parameters, Environment Variables, AWS System Manager Parameter Store, and more.
 
 ## Install
 
@@ -18,10 +18,12 @@ npm install construct-typed-parameters
 
 ## Usage
 
-```ts
-import { createTypedParameters } from 'construct-typed-parameters';
+### Basic
 
-const parameters = createTypedParameters(parameterType => ({
+```ts
+import { TypedParameters } from 'construct-typed-parameters';
+
+const parameters = new TypedParameters(parameterType => ({
   TOKEN: parameterType.String({ required: true }),
   FIREBASE_CONFIG: parameterType.Json<{ apiKey: string }>({ required: true }),
 }));
@@ -32,17 +34,53 @@ const stringifiedParameters = parameters.stringify({
 });
 //=> { TOKEN: 'xxxx', FIREBASE_CONFIG: '{"apiKey":"xxxx"}'}
 
-// set to Environment Variable
-Object.entries(stringifiedParameters).forEach(
-  ([parameterName, stringifiedValue]) => {
-    process.env[parameterName] = stringifiedValue;
-  }
+const parsedParameters = parameters.parse({
+  TOKEN: 'xxxx',
+  FIREBASE_CONFIG: '{"apiKey":"xxxx"}',
+});
+//=> { TOKEN: 'xxxx', FIREBASE_CONFIG: { apiKey: 'xxxx' }}
+```
+
+#### AutoCompletion
+
+![AutoCompletion](https://github.com/masahirompp/images/blob/main/construct-typed-parameters.png?raw=true)
+
+### with Query Parameters
+
+```ts
+const queryString = new URLSearchParams(
+  parameters.stringify({
+    TOKEN: 'xxxx',
+    FIREBASE_CONFIG: { apiKey: 'xxxx' },
+  })
+).toString();
+//=> 'TOKEN=xxxx&FIREBASE_CONFIG=%7B%22apiKey%22%3A%22xxxx%22%7D'
+
+const parsedParameters = parameters.parse(
+  Object.fromEntries(
+    new URLSearchParams(
+      'TOKEN=xxxx&FIREBASE_CONFIG=%7B%22apiKey%22%3A%22xxxx%22%7D'
+    ).entries()
+  )
 );
+//=> { TOKEN: 'xxxx', FIREBASE_CONFIG: { apiKey: 'xxxx' } }
+```
+
+### with Environment Variables
+
+```ts
+Object.entries(
+  parameters.stringify({
+    TOKEN: 'xxxx',
+    FIREBASE_CONFIG: { apiKey: 'xxxx' },
+  })
+).forEach(([parameterName, stringifiedValue]) => {
+  process.env[parameterName] = stringifiedValue;
+});
 //=>
 // process.env.TOKEN: 'xxxx'
 // process.env.FIREBASE_CONFIG: '{"apiKey":"xxxx"}'
 
-// load from Environment Variable
 const parsedParameters = parameters.parse({
   TOKEN: process.env.TOKEN,
   FIREBASE_CONFIG: process.env.FIREBASE_CONFIG,
@@ -50,23 +88,22 @@ const parsedParameters = parameters.parse({
 //=> { TOKEN: 'xxxx', FIREBASE_CONFIG: { apiKey: 'xxxx' } }
 ```
 
-## AutoCompletion
+### with AWS SSM Parameter Store
 
-![AutoCompletion](https://github.com/masahirompp/construct-typed-parameters/blob/image/autocompletion.png?raw=true)
+see <https://github.com/masahirompp/ssm-parameters-boot>
 
 ## API
 
 see `test/index.spec.ts`.
 
-### createTypedParameters
+### TypedParameters
+
+#### Constructor
 
 ```ts
-import {
-  createTypedParameters,
-  TypedParametersConstruct,
-} from 'construct-typed-parameters';
+import { TypedParameters } from 'construct-typed-parameters';
 
-const parameters: TypedParametersConstruct<T> = createTypedParameters(pt => ({
+const parameters = new TypedParameters(pt => ({
   stringValue: pt.String({
     // required: boolean
     required: true,
@@ -79,12 +116,12 @@ const parameters: TypedParametersConstruct<T> = createTypedParameters(pt => ({
     required: true,
     defaultValue: 'v1',
     validate: v =>
-      ['v1', 'v2'].includes(v) ? null : ['the value must be v1 or v2'],
+      ['v1', 'v2'].includes(v) ? null : 'the value must be v1 or v2',
   }),
   numberValue: pt.Number({
     required: true,
     defaultValue: 1,
-    validate: v => (v === 0 ? 'value must not be 0' : ''),
+    validate: v => (v === 0 ? 'value must not be 0' : null),
   }),
   unionNumberValue: pt.UnionNumber<0 | 1>({
     required: true,
@@ -99,31 +136,23 @@ const parameters: TypedParametersConstruct<T> = createTypedParameters(pt => ({
   jsonValue: pt.Json<{ apiKey: string }>({
     required: true,
     defaultValue: { apiKey: 'xxxx' },
-    validate: v => (v.apiKey.length ? '' : 'apiKey must be specified'),
+    validate: v => (v.apiKey.length ? null : 'apiKey must be specified'),
   }),
   arrayValue: pt.Json<string[]>({
     required: true,
     defaultValue: ['main', 'sub'],
-    validate: v => (v.length ? [] : ['array must not empty']),
+    validate: v => (v.length ? null : 'array must not empty'),
   }),
 }));
 ```
 
-### TypedParametersConstruct#parse
+#### Method
 
 ```ts
-const parameters: TypedParametersConstruct<T> = createTypedParameters(pt => ({ ... }));
-
 parameters.parse(
   stringifiedParameters: Partial<StringifiedParameters<T>>,
   shouldValidate = true
 ) : ParsedParameters<T>
-```
-
-### TypedParametersConstruct#stringify
-
-```ts
-const parameters: TypedParametersConstruct<T> = createTypedParameters(pt => ({ ... }));
 
 parameters.stringify(
   parsedParameters: Partial<ParsedParameters<T>>,
