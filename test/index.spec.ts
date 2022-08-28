@@ -1,15 +1,18 @@
-import { TypedParameters, ParameterError } from '../src/index';
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable import/extensions */
+import process from 'node:process';
+import {TypedParameters, ParameterError} from '../src/index';
 
 describe('index', () => {
   describe('all required without defaultValue.', () => {
     const parameters = new TypedParameters(pt => ({
-      stringValue: pt.String({ required: true }),
-      unionStringValue: pt.UnionString<'v1' | 'v2'>({ required: true }),
-      numberValue: pt.Number({ required: true }),
-      unionNumberValue: pt.UnionNumber<0 | 1>({ required: true }),
-      booleanValue: pt.Boolean({ required: true }),
-      jsonValue: pt.Json<{ apiKey: string }>({ required: true }),
-      arrayValue: pt.Json<string[]>({ required: true }),
+      stringValue: pt.string({required: true}),
+      unionStringValue: pt.unionString<'v1' | 'v2'>({required: true}),
+      numberValue: pt.number({required: true}),
+      unionNumberValue: pt.unionNumber<0 | 1>({required: true}),
+      booleanValue: pt.boolean({required: true}),
+      jsonValue: pt.json<{apiKey: string}>({required: true}),
+      arrayValue: pt.json<string[]>({required: true}),
     }));
 
     it('parse', () => {
@@ -22,14 +25,14 @@ describe('index', () => {
           booleanValue: 'true',
           jsonValue: '{"apiKey":"xxxx"}',
           arrayValue: '["main", "sub"]',
-        })
+        }),
       ).toEqual({
         stringValue: 'xxxx',
         unionStringValue: 'v1',
         numberValue: 1,
         unionNumberValue: 0,
         booleanValue: true,
-        jsonValue: { apiKey: 'xxxx' },
+        jsonValue: {apiKey: 'xxxx'},
         arrayValue: ['main', 'sub'],
       });
     });
@@ -37,7 +40,7 @@ describe('index', () => {
     it('parse required error', () => {
       expect(() => parameters.parse({})).toThrow(ParameterError);
       expect(() => parameters.parse({})).toThrow(
-        'stringValue is required, unionStringValue is required, numberValue is required, unionNumberValue is required, booleanValue is required, jsonValue is required, arrayValue is required.'
+        'stringValue is required, unionStringValue is required, numberValue is required, unionNumberValue is required, booleanValue is required, jsonValue is required, arrayValue is required.',
       );
     });
 
@@ -53,9 +56,9 @@ describe('index', () => {
           numberValue: 1,
           unionNumberValue: 0,
           booleanValue: true,
-          jsonValue: { apiKey: 'xxxx' },
+          jsonValue: {apiKey: 'xxxx'},
           arrayValue: ['main', 'sub'],
-        })
+        }),
       ).toEqual({
         stringValue: 'xxxx',
         unionStringValue: 'v1',
@@ -70,7 +73,7 @@ describe('index', () => {
     it('stringify required error', () => {
       expect(() => parameters.stringify({})).toThrow(ParameterError);
       expect(() => parameters.stringify({})).toThrow(
-        'stringValue is required, unionStringValue is required, numberValue is required, unionNumberValue is required, booleanValue is required, jsonValue is required, arrayValue is required.'
+        'stringValue is required, unionStringValue is required, numberValue is required, unionNumberValue is required, booleanValue is required, jsonValue is required, arrayValue is required.',
       );
     });
 
@@ -81,22 +84,22 @@ describe('index', () => {
 
   describe('all required with defaultValue.', () => {
     const parameters = new TypedParameters(pt => ({
-      stringValue: pt.String({ required: true, defaultValue: 'xxxx' }),
-      unionStringValue: pt.UnionString<'v1' | 'v2'>({
+      stringValue: pt.string({required: true, defaultValue: 'xxxx'}),
+      unionStringValue: pt.unionString<'v1' | 'v2'>({
         required: true,
         defaultValue: 'v1',
       }),
-      numberValue: pt.Number({ required: true, defaultValue: 1 }),
-      unionNumberValue: pt.UnionNumber<0 | 1>({
+      numberValue: pt.number({required: true, defaultValue: 1}),
+      unionNumberValue: pt.unionNumber<0 | 1>({
         required: true,
         defaultValue: 0,
       }),
-      booleanValue: pt.Boolean({ required: true, defaultValue: true }),
-      jsonValue: pt.Json<{ apiKey: string }>({
+      booleanValue: pt.boolean({required: true, defaultValue: true}),
+      jsonValue: pt.json<{apiKey: string}>({
         required: true,
-        defaultValue: { apiKey: 'xxxx' },
+        defaultValue: {apiKey: 'xxxx'},
       }),
-      arrayValue: pt.Json<string[]>({
+      arrayValue: pt.json<string[]>({
         required: true,
         defaultValue: ['main', 'sub'],
       }),
@@ -112,14 +115,14 @@ describe('index', () => {
           booleanValue: 'false',
           jsonValue: '{"apiKey":"yyyy"}',
           arrayValue: '["wake", "up"]',
-        })
+        }),
       ).toEqual({
         stringValue: 'yyyy',
         unionStringValue: 'v2',
         numberValue: 2,
         unionNumberValue: 1,
         booleanValue: false,
-        jsonValue: { apiKey: 'yyyy' },
+        jsonValue: {apiKey: 'yyyy'},
         arrayValue: ['wake', 'up'],
       });
     });
@@ -131,7 +134,7 @@ describe('index', () => {
         numberValue: 1,
         unionNumberValue: 0,
         booleanValue: true,
-        jsonValue: { apiKey: 'xxxx' },
+        jsonValue: {apiKey: 'xxxx'},
         arrayValue: ['main', 'sub'],
       });
     });
@@ -144,9 +147,9 @@ describe('index', () => {
           numberValue: 2,
           unionNumberValue: 1,
           booleanValue: false,
-          jsonValue: { apiKey: 'yyyy' },
+          jsonValue: {apiKey: 'yyyy'},
           arrayValue: ['wake', 'up'],
-        })
+        }),
       ).toEqual({
         stringValue: 'yyyy',
         unionStringValue: 'v2',
@@ -173,13 +176,13 @@ describe('index', () => {
 
   describe('all optional without defaultValue.', () => {
     const parameters = new TypedParameters(pt => ({
-      stringValue: pt.String({ required: false }),
-      unionStringValue: pt.UnionString<'v1' | 'v2'>({ required: false }),
-      numberValue: pt.Number({ required: false }),
-      unionNumberValue: pt.UnionNumber<0 | 1>({ required: false }),
-      booleanValue: pt.Boolean({ required: false }),
-      jsonValue: pt.Json<{ apiKey: string }>({ required: false }),
-      arrayValue: pt.Json<string[]>({ required: false }),
+      stringValue: pt.string({required: false}),
+      unionStringValue: pt.unionString<'v1' | 'v2'>({required: false}),
+      numberValue: pt.number({required: false}),
+      unionNumberValue: pt.unionNumber<0 | 1>({required: false}),
+      booleanValue: pt.boolean({required: false}),
+      jsonValue: pt.json<{apiKey: string}>({required: false}),
+      arrayValue: pt.json<string[]>({required: false}),
     }));
 
     it('parse', () => {
@@ -192,14 +195,14 @@ describe('index', () => {
           booleanValue: 'true',
           jsonValue: '{"apiKey":"xxxx"}',
           arrayValue: '["main", "sub"]',
-        })
+        }),
       ).toEqual({
         stringValue: 'xxxx',
         unionStringValue: 'v1',
         numberValue: 1,
         unionNumberValue: 0,
         booleanValue: true,
-        jsonValue: { apiKey: 'xxxx' },
+        jsonValue: {apiKey: 'xxxx'},
         arrayValue: ['main', 'sub'],
       });
     });
@@ -216,9 +219,9 @@ describe('index', () => {
           numberValue: 1,
           unionNumberValue: 0,
           booleanValue: true,
-          jsonValue: { apiKey: 'xxxx' },
+          jsonValue: {apiKey: 'xxxx'},
           arrayValue: ['main', 'sub'],
-        })
+        }),
       ).toEqual({
         stringValue: 'xxxx',
         unionStringValue: 'v1',
@@ -237,22 +240,22 @@ describe('index', () => {
 
   describe('all optional with defaultValue.', () => {
     const parameters = new TypedParameters(pt => ({
-      stringValue: pt.String({ required: false, defaultValue: 'xxxx' }),
-      unionStringValue: pt.UnionString<'v1' | 'v2'>({
+      stringValue: pt.string({required: false, defaultValue: 'xxxx'}),
+      unionStringValue: pt.unionString<'v1' | 'v2'>({
         required: false,
         defaultValue: 'v1',
       }),
-      numberValue: pt.Number({ required: false, defaultValue: 1 }),
-      unionNumberValue: pt.UnionNumber<0 | 1>({
+      numberValue: pt.number({required: false, defaultValue: 1}),
+      unionNumberValue: pt.unionNumber<0 | 1>({
         required: false,
         defaultValue: 0,
       }),
-      booleanValue: pt.Boolean({ required: false, defaultValue: true }),
-      jsonValue: pt.Json<{ apiKey: string }>({
+      booleanValue: pt.boolean({required: false, defaultValue: true}),
+      jsonValue: pt.json<{apiKey: string}>({
         required: false,
-        defaultValue: { apiKey: 'xxxx' },
+        defaultValue: {apiKey: 'xxxx'},
       }),
-      arrayValue: pt.Json<string[]>({
+      arrayValue: pt.json<string[]>({
         required: false,
         defaultValue: ['main', 'sub'],
       }),
@@ -268,14 +271,14 @@ describe('index', () => {
           booleanValue: 'false',
           jsonValue: '{"apiKey":"yyyy"}',
           arrayValue: '["wake", "up"]',
-        })
+        }),
       ).toEqual({
         stringValue: 'yyyy',
         unionStringValue: 'v2',
         numberValue: 2,
         unionNumberValue: 1,
         booleanValue: false,
-        jsonValue: { apiKey: 'yyyy' },
+        jsonValue: {apiKey: 'yyyy'},
         arrayValue: ['wake', 'up'],
       });
     });
@@ -287,7 +290,7 @@ describe('index', () => {
         numberValue: 1,
         unionNumberValue: 0,
         booleanValue: true,
-        jsonValue: { apiKey: 'xxxx' },
+        jsonValue: {apiKey: 'xxxx'},
         arrayValue: ['main', 'sub'],
       });
     });
@@ -300,9 +303,9 @@ describe('index', () => {
           numberValue: 2,
           unionNumberValue: 1,
           booleanValue: false,
-          jsonValue: { apiKey: 'yyyy' },
+          jsonValue: {apiKey: 'yyyy'},
           arrayValue: ['wake', 'up'],
-        })
+        }),
       ).toEqual({
         stringValue: 'yyyy',
         unionStringValue: 'v2',
@@ -329,34 +332,34 @@ describe('index', () => {
 
   describe('validation.', () => {
     const parameters = new TypedParameters(pt => ({
-      stringValue: pt.String({
+      stringValue: pt.string({
         required: true,
-        validate: v => (v.includes('x') ? null : 'the value must contain x'),
+        validate: v => (v.includes('x') ? undefined : 'the value must contain x'),
       }),
-      unionStringValue: pt.UnionString<'v1' | 'v2'>({
+      unionStringValue: pt.unionString<'v1' | 'v2'>({
         required: true,
         validate: v =>
-          ['v1', 'v2'].includes(v) ? null : ['the value must be v1 or v2'],
+          ['v1', 'v2'].includes(v) ? undefined : ['the value must be v1 or v2'],
       }),
-      numberValue: pt.Number({
+      numberValue: pt.number({
         required: true,
         validate: v => (v === 0 ? 'value must not be 0' : ''),
       }),
-      unionNumberValue: pt.UnionNumber<0 | 1>({
+      unionNumberValue: pt.unionNumber<0 | 1>({
         required: true,
-        validate: v => ([0, 1].includes(v) ? null : 'the value must be 0 or 1'),
+        validate: v => ([0, 1].includes(v) ? undefined : 'the value must be 0 or 1'),
       }),
-      booleanValue: pt.Boolean({
+      booleanValue: pt.boolean({
         required: true,
-        validate: v => (v ? null : 'the value must be true'),
+        validate: v => (v ? undefined : 'the value must be true'),
       }),
-      jsonValue: pt.Json<{ apiKey: string }>({
+      jsonValue: pt.json<{apiKey: string}>({
         required: true,
-        validate: v => (v.apiKey.length ? '' : 'apiKey must be specified'),
+        validate: v => (v.apiKey.length > 0 ? '' : 'apiKey must be specified'),
       }),
-      arrayValue: pt.Json<string[]>({
+      arrayValue: pt.json<string[]>({
         required: true,
-        validate: v => (v.length ? [] : ['array must not empty']),
+        validate: v => (v.length > 0 ? [] : ['array must not empty']),
       }),
     }));
 
@@ -370,14 +373,14 @@ describe('index', () => {
           booleanValue: 'true',
           jsonValue: '{"apiKey":"xxxx"}',
           arrayValue: '["main", "sub"]',
-        })
+        }),
       ).toEqual({
         stringValue: 'xxxx',
         unionStringValue: 'v1',
         numberValue: 1,
         unionNumberValue: 0,
         booleanValue: true,
-        jsonValue: { apiKey: 'xxxx' },
+        jsonValue: {apiKey: 'xxxx'},
         arrayValue: ['main', 'sub'],
       });
     });
@@ -392,7 +395,7 @@ describe('index', () => {
           booleanValue: 'false',
           jsonValue: '{"apiKey":""}',
           arrayValue: '[]',
-        })
+        }),
       ).toThrow(ParameterError);
       expect(() =>
         parameters.parse({
@@ -403,9 +406,9 @@ describe('index', () => {
           booleanValue: 'false',
           jsonValue: '{"apiKey":""}',
           arrayValue: '[]',
-        })
+        }),
       ).toThrow(
-        'stringValue: the value must contain x, unionStringValue: the value must be v1 or v2, numberValue: value must not be 0, unionNumberValue: the value must be 0 or 1, booleanValue: the value must be true, jsonValue: apiKey must be specified, arrayValue: array must not empty.'
+        'stringValue: the value must contain x, unionStringValue: the value must be v1 or v2, numberValue: value must not be 0, unionNumberValue: the value must be 0 or 1, booleanValue: the value must be true, jsonValue: apiKey must be specified, arrayValue: array must not empty.',
       );
     });
 
@@ -421,8 +424,8 @@ describe('index', () => {
             jsonValue: '{"apiKey":""}',
             arrayValue: '[]',
           },
-          false
-        )
+          false,
+        ),
       ).toEqual({
         arrayValue: [],
         booleanValue: false,
@@ -443,9 +446,9 @@ describe('index', () => {
           numberValue: '0',
           booleanValue: 'false',
           arrayValue: '[]',
-        })
+        }),
       ).toThrow(
-        'unionStringValue is required, unionNumberValue is required, jsonValue is required. stringValue: the value must contain x, numberValue: value must not be 0, booleanValue: the value must be true, arrayValue: array must not empty.'
+        'unionStringValue is required, unionNumberValue is required, jsonValue is required. stringValue: the value must contain x, numberValue: value must not be 0, booleanValue: the value must be true, arrayValue: array must not empty.',
       );
     });
 
@@ -458,8 +461,8 @@ describe('index', () => {
             booleanValue: 'false',
             arrayValue: '[]',
           },
-          false
-        )
+          false,
+        ),
       ).toEqual({
         stringValue: 'yyyy',
         numberValue: 0,
@@ -476,9 +479,9 @@ describe('index', () => {
           numberValue: 1,
           unionNumberValue: 0,
           booleanValue: true,
-          jsonValue: { apiKey: 'xxxx' },
+          jsonValue: {apiKey: 'xxxx'},
           arrayValue: ['main', 'sub'],
-        })
+        }),
       ).toEqual({
         stringValue: 'xxxx',
         unionStringValue: 'v1',
@@ -498,9 +501,9 @@ describe('index', () => {
           numberValue: 0,
           unionNumberValue: -1 as never,
           booleanValue: false,
-          jsonValue: { apiKey: '' },
+          jsonValue: {apiKey: ''},
           arrayValue: [],
-        })
+        }),
       ).toThrow(ParameterError);
       expect(() =>
         parameters.stringify({
@@ -509,11 +512,11 @@ describe('index', () => {
           numberValue: 0,
           unionNumberValue: -1 as never,
           booleanValue: false,
-          jsonValue: { apiKey: '' },
+          jsonValue: {apiKey: ''},
           arrayValue: [],
-        })
+        }),
       ).toThrow(
-        'stringValue: the value must contain x, unionStringValue: the value must be v1 or v2, numberValue: value must not be 0, unionNumberValue: the value must be 0 or 1, booleanValue: the value must be true, jsonValue: apiKey must be specified, arrayValue: array must not empty.'
+        'stringValue: the value must contain x, unionStringValue: the value must be v1 or v2, numberValue: value must not be 0, unionNumberValue: the value must be 0 or 1, booleanValue: the value must be true, jsonValue: apiKey must be specified, arrayValue: array must not empty.',
       );
     });
 
@@ -526,11 +529,11 @@ describe('index', () => {
             numberValue: 0,
             unionNumberValue: -1 as never,
             booleanValue: false,
-            jsonValue: { apiKey: '' },
+            jsonValue: {apiKey: ''},
             arrayValue: [],
           },
-          false
-        )
+          false,
+        ),
       ).toEqual({
         stringValue: 'yyyy',
         unionStringValue: 'v3',
@@ -547,10 +550,10 @@ describe('index', () => {
         parameters.stringify({
           unionStringValue: 'v3' as never,
           unionNumberValue: -1 as never,
-          jsonValue: { apiKey: '' },
-        })
+          jsonValue: {apiKey: ''},
+        }),
       ).toThrow(
-        'stringValue is required, numberValue is required, booleanValue is required, arrayValue is required. unionStringValue: the value must be v1 or v2, unionNumberValue: the value must be 0 or 1, jsonValue: apiKey must be specified.'
+        'stringValue is required, numberValue is required, booleanValue is required, arrayValue is required. unionStringValue: the value must be v1 or v2, unionNumberValue: the value must be 0 or 1, jsonValue: apiKey must be specified.',
       );
     });
 
@@ -560,10 +563,10 @@ describe('index', () => {
           {
             unionStringValue: 'v3' as never,
             unionNumberValue: -1 as never,
-            jsonValue: { apiKey: '' },
+            jsonValue: {apiKey: ''},
           },
-          false
-        )
+          false,
+        ),
       ).toEqual({
         unionStringValue: 'v3',
         unionNumberValue: '-1',
@@ -575,8 +578,8 @@ describe('index', () => {
 
 describe('with query parameters', () => {
   const parameters = new TypedParameters(pt => ({
-    TOKEN: pt.String({ required: true }),
-    FIREBASE_CONFIG: pt.Json<{ apiKey: string }>({ required: true }),
+    TOKEN: pt.string({required: true}),
+    FIREBASE_CONFIG: pt.json<{apiKey: string}>({required: true}),
   }));
 
   it('make query parameters', () => {
@@ -584,9 +587,9 @@ describe('with query parameters', () => {
       new URLSearchParams(
         parameters.stringify({
           TOKEN: 'xxxx',
-          FIREBASE_CONFIG: { apiKey: 'xxxx' },
-        })
-      ).toString()
+          FIREBASE_CONFIG: {apiKey: 'xxxx'},
+        }),
+      ).toString(),
     ).toEqual('TOKEN=xxxx&FIREBASE_CONFIG=%7B%22apiKey%22%3A%22xxxx%22%7D');
   });
 
@@ -595,13 +598,13 @@ describe('with query parameters', () => {
       parameters.parse(
         Object.fromEntries(
           new URLSearchParams(
-            'TOKEN=xxxx&FIREBASE_CONFIG=%7B%22apiKey%22%3A%22xxxx%22%7D'
-          ).entries()
-        )
-      )
+            'TOKEN=xxxx&FIREBASE_CONFIG=%7B%22apiKey%22%3A%22xxxx%22%7D',
+          ).entries(),
+        ),
+      ),
     ).toEqual({
       TOKEN: 'xxxx',
-      FIREBASE_CONFIG: { apiKey: 'xxxx' },
+      FIREBASE_CONFIG: {apiKey: 'xxxx'},
     });
   });
 });
@@ -611,7 +614,7 @@ describe('with environment variables', () => {
 
   beforeEach(() => {
     jest.resetModules(); // Most important - it clears the cache
-    process.env = { ...OLD_ENV }; // Make a copy
+    process.env = {...OLD_ENV}; // Make a copy
   });
 
   afterAll(() => {
@@ -619,33 +622,33 @@ describe('with environment variables', () => {
   });
 
   const parameters = new TypedParameters(pt => ({
-    TOKEN: pt.String({ required: true }),
-    FIREBASE_CONFIG: pt.Json<{ apiKey: string }>({ required: true }),
+    TOKEN: pt.string({required: true}),
+    FIREBASE_CONFIG: pt.json<{apiKey: string}>({required: true}),
   }));
 
   it('set and load environment variables', () => {
-    Object.entries(
+    for (const [parameterName, stringifiedValue] of Object.entries(
       parameters.stringify({
         TOKEN: 'xxxx',
-        FIREBASE_CONFIG: { apiKey: 'xxxx' },
-      })
-    ).forEach(([parameterName, stringifiedValue]) => {
+        FIREBASE_CONFIG: {apiKey: 'xxxx'},
+      }),
+    )) {
       process.env[parameterName] = stringifiedValue;
-    });
+    }
 
-    // set environment variables
+    // Set environment variables
     expect(process.env.TOKEN).toEqual('xxxx');
     expect(process.env.FIREBASE_CONFIG).toEqual('{"apiKey":"xxxx"}');
 
-    // load environment variables
+    // Load environment variables
     expect(
       parameters.parse({
         TOKEN: process.env.TOKEN,
         FIREBASE_CONFIG: process.env.FIREBASE_CONFIG,
-      })
+      }),
     ).toEqual({
       TOKEN: 'xxxx',
-      FIREBASE_CONFIG: { apiKey: 'xxxx' },
+      FIREBASE_CONFIG: {apiKey: 'xxxx'},
     });
   });
 });

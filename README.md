@@ -24,8 +24,8 @@ npm install construct-typed-parameters
 import { TypedParameters } from 'construct-typed-parameters';
 
 const parameters = new TypedParameters(parameterType => ({
-  TOKEN: parameterType.String({ required: true }),
-  FIREBASE_CONFIG: parameterType.Json<{ apiKey: string }>({ required: true }),
+  TOKEN: parameterType.string({ required: true }),
+  FIREBASE_CONFIG: parameterType.json<{ apiKey: string }>({ required: true }),
 }));
 
 const stringifiedParameters = parameters.stringify({
@@ -104,7 +104,7 @@ see `test/index.spec.ts`.
 import { TypedParameters } from 'construct-typed-parameters';
 
 const parameters = new TypedParameters(pt => ({
-  stringValue: pt.String({
+  stringValue: pt.string({
     // required: boolean
     required: true,
     // defaultValue?: T1
@@ -112,33 +112,33 @@ const parameters = new TypedParameters(pt => ({
     // validate?: (value: T1) => string | string[] | null;
     validate: v => (v.includes('x') ? null : 'the value must contain x'),
   }),
-  unionStringValue: pt.UnionString<'v1' | 'v2'>({
+  unionStringValue: pt.unionString<'v1' | 'v2'>({
     required: true,
     defaultValue: 'v1',
     validate: v =>
       ['v1', 'v2'].includes(v) ? null : 'the value must be v1 or v2',
   }),
-  numberValue: pt.Number({
+  numberValue: pt.number({
     required: true,
     defaultValue: 1,
     validate: v => (v === 0 ? 'value must not be 0' : null),
   }),
-  unionNumberValue: pt.UnionNumber<0 | 1>({
+  unionNumberValue: pt.unionNumber<0 | 1>({
     required: true,
     defaultValue: 0,
     validate: v => ([0, 1].includes(v) ? null : 'the value must be 0 or 1'),
   }),
-  booleanValue: pt.Boolean({
+  booleanValue: pt.boolean({
     required: true,
     defaultValue: true,
     validate: v => (v ? null : 'the value must be true'),
   }),
-  jsonValue: pt.Json<{ apiKey: string }>({
+  jsonValue: pt.json<{ apiKey: string }>({
     required: true,
     defaultValue: { apiKey: 'xxxx' },
     validate: v => (v.apiKey.length ? null : 'apiKey must be specified'),
   }),
-  arrayValue: pt.Json<string[]>({
+  arrayValue: pt.json<string[]>({
     required: true,
     defaultValue: ['main', 'sub'],
     validate: v => (v.length ? null : 'array must not empty'),

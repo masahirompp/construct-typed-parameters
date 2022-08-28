@@ -1,4 +1,11 @@
-export type ParameterValidate<T> = (value: T) => string | string[] | null;
+/* eslint-disable @typescript-eslint/prefer-reduce-type-parameter */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable eqeqeq */
+/* eslint-disable no-negated-condition */
+/* eslint-disable no-eq-null */
+/* eslint-disable unicorn/no-array-reduce */
+export type ParameterValidate<T> = (value: T) => string | string[] | undefined;
 
 export type ParameterConstruct<T> = {
   stringify: (value: T) => string;
@@ -9,20 +16,20 @@ export type ParameterConstruct<T> = {
 };
 
 export type ParsedParameters<
-  T extends Record<string, ParameterConstruct<any>>
+  T extends Record<string, ParameterConstruct<any>>,
 > = {
   [P in keyof T]: T[P] extends ParameterConstruct<infer R>
-    ? R extends { defaultValue: undefined; required: false }
+    ? R extends {defaultValue: undefined; required: false}
       ? R | undefined
       : R
     : never;
 };
 
 export type StringifiedParameters<
-  T extends Record<string, ParameterConstruct<any>>
+  T extends Record<string, ParameterConstruct<any>>,
 > = {
   [P in keyof T]: T[P] extends ParameterConstruct<infer R>
-    ? R extends { defaultValue: undefined; required: false }
+    ? R extends {defaultValue: undefined; required: false}
       ? string | undefined
       : string
     : never;
@@ -33,21 +40,21 @@ export class ParameterError extends Error {
     public requiredErrorParameterNames: string[],
     public validationErrorParameterMap: Record<string, string[]>,
     public serialized: any,
-    public parsed: any
+    public parsed: any,
   ) {
-    const requiredErrorMessage = requiredErrorParameterNames.length
+    const requiredErrorMessage = requiredErrorParameterNames.length > 0
       ? requiredErrorParameterNames.map(p => `${p} is required`).join(', ')
       : '';
     const validationErrorMessage = Object.keys(validationErrorParameterMap)
-      .length
+      .length > 0
       ? Object.entries(validationErrorParameterMap)
-          .flatMap(([parameterName, errors]) =>
-            errors.map(err => `${parameterName}: ${err}`)
-          )
-          .join(', ')
+        .flatMap(([parameterName, errors]) =>
+          errors.map(error => `${parameterName}: ${error}`),
+        )
+        .join(', ')
       : '';
-    const errorMessage =
-      requiredErrorMessage && validationErrorMessage
+    const errorMessage
+      = requiredErrorMessage && validationErrorMessage
         ? `${requiredErrorMessage}. ${validationErrorMessage}.`
         : `${requiredErrorMessage}${validationErrorMessage}.`;
     super(errorMessage);
@@ -76,7 +83,7 @@ const createUnionStringParameterConstruct = <U extends string>(args: {
   validate?: ParameterValidate<U>;
 }) =>
   createStringParameterConstruct(
-    args as never
+    args as never,
   ) as unknown as ParameterConstruct<U>;
 
 const createNumberParameterConstruct = (args: {
@@ -86,7 +93,7 @@ const createNumberParameterConstruct = (args: {
 }) =>
   createParameterConstruct<number>({
     stringify: n => `${n}`,
-    parse: s => Number(s),
+    parse: Number,
     ...args,
   });
 
@@ -96,7 +103,7 @@ const createUnionNumberParameterConstruct = <U extends number>(args: {
   validate?: ParameterValidate<U>;
 }) =>
   createNumberParameterConstruct(
-    args as never
+    args as never,
   ) as unknown as ParameterConstruct<U>;
 
 const createBooleanParameterConstruct = (args: {
@@ -111,7 +118,7 @@ const createBooleanParameterConstruct = (args: {
   });
 
 const createJsonParameterConstruct = <
-  T extends Record<string, unknown> | Array<unknown>
+  T extends Record<string, unknown> | unknown[],
 >(args: {
   required: boolean;
   defaultValue?: T;
@@ -123,65 +130,66 @@ const createJsonParameterConstruct = <
     ...args,
   });
 
-const ParameterType = {
-  String: createStringParameterConstruct,
-  UnionString: createUnionStringParameterConstruct,
-  Number: createNumberParameterConstruct,
-  UnionNumber: createUnionNumberParameterConstruct,
-  Boolean: createBooleanParameterConstruct,
-  Json: createJsonParameterConstruct,
-  Custom: createParameterConstruct,
+const parameterTypeMap = {
+  string: createStringParameterConstruct,
+  unionString: createUnionStringParameterConstruct,
+  number: createNumberParameterConstruct,
+  unionNumber: createUnionNumberParameterConstruct,
+  boolean: createBooleanParameterConstruct,
+  json: createJsonParameterConstruct,
+  custom: createParameterConstruct,
 };
 
 export class TypedParameters<
-  T extends Record<string, ParameterConstruct<any>>
+  T extends Record<string, ParameterConstruct<any>>,
 > {
   private readonly parametersConstruct: T;
 
   constructor(
-    defineParametersConstruct: (parameterType: typeof ParameterType) => T
+    defineParametersConstruct: (parameterType: typeof parameterTypeMap) => T,
   ) {
-    this.parametersConstruct = defineParametersConstruct(ParameterType);
+    this.parametersConstruct = defineParametersConstruct(parameterTypeMap);
   }
 
   parse(
     stringifiedParameters: Partial<StringifiedParameters<T>>,
-    shouldValidate = true
+    shouldValidate = true,
   ) {
     const requiredErrorParameters: string[] = [];
     const validationErrorParameterMap: Record<string, string[]> = {};
     const result = Object.entries(this.parametersConstruct).reduce<
-      ParsedParameters<T>
+    ParsedParameters<T>
     >((payload, [parameterName, construct]) => {
       const value = (() => {
         const serialized = stringifiedParameters[parameterName];
-        const parsedValue =
-          typeof serialized === 'string'
+        const parsedValue
+          = typeof serialized === 'string'
             ? construct.parse(serialized)
             : undefined;
         if (parsedValue != null) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           return parsedValue;
         }
+
         if (construct.defaultValue != null) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           return construct.defaultValue;
         }
+
         if (shouldValidate && construct.required) {
           requiredErrorParameters.push(parameterName);
         }
+
         return undefined;
       })();
 
       if (
-        shouldValidate &&
-        value != null &&
-        typeof construct.validate === 'function'
+        shouldValidate
+        && value != null
+        && typeof construct.validate === 'function'
       ) {
         const validationError = construct.validate(value);
         if (validationError) {
           if (Array.isArray(validationError)) {
-            if (validationError.length) {
+            if (validationError.length > 0) {
               validationErrorParameterMap[parameterName] = validationError;
             }
           } else {
@@ -194,43 +202,44 @@ export class TypedParameters<
         ...payload,
         [parameterName]: value,
       };
-    }, {} as never);
+    }, {} as ParsedParameters<T>);
 
     if (
-      requiredErrorParameters.length ||
-      Object.keys(validationErrorParameterMap).length
+      requiredErrorParameters.length > 0
+      || Object.keys(validationErrorParameterMap).length > 0
     ) {
       throw new ParameterError(
         requiredErrorParameters,
         validationErrorParameterMap,
         stringifiedParameters,
-        result
+        result,
       );
     }
+
     return result;
   }
 
   stringify(
     parsedParameters: Partial<ParsedParameters<T>>,
-    shouldValidate = true
+    shouldValidate = true,
   ) {
     const requiredErrorParameters: string[] = [];
     const validationErrorParameterMap: Record<string, string[]> = {};
     const result = Object.entries(this.parametersConstruct).reduce<
-      StringifiedParameters<T>
+    StringifiedParameters<T>
     >((payload, [parameterName, construct]) => {
       const serialized = (() => {
         const value = parsedParameters[parameterName];
 
         if (
-          shouldValidate &&
-          value != null &&
-          typeof construct.validate === 'function'
+          shouldValidate
+          && value != null
+          && typeof construct.validate === 'function'
         ) {
           const validationError = construct.validate(value);
           if (validationError) {
             if (Array.isArray(validationError)) {
-              if (validationError.length) {
+              if (validationError.length > 0) {
                 validationErrorParameterMap[parameterName] = validationError;
               }
             } else {
@@ -239,22 +248,25 @@ export class TypedParameters<
           }
         }
 
-        const serializedValue =
-          value != null ? construct.stringify(value) : undefined;
+        const serializedValue
+          = value != null ? construct.stringify(value) : undefined;
         if (serializedValue != null) {
           return serializedValue;
         }
+
         if (construct.defaultValue != null) {
           const serializedDefaultValue = construct.stringify(
-            construct.defaultValue
+            construct.defaultValue,
           );
           if (serializedDefaultValue != null) {
             return serializedDefaultValue;
           }
         }
+
         if (shouldValidate && construct.required) {
           requiredErrorParameters.push(parameterName);
         }
+
         return undefined;
       })();
 
@@ -262,19 +274,20 @@ export class TypedParameters<
         ...payload,
         [parameterName]: serialized,
       };
-    }, {} as never);
+    }, {} as StringifiedParameters<T>);
 
     if (
-      requiredErrorParameters.length ||
-      Object.keys(validationErrorParameterMap).length
+      requiredErrorParameters.length > 0
+      || Object.keys(validationErrorParameterMap).length > 0
     ) {
       throw new ParameterError(
         requiredErrorParameters,
         validationErrorParameterMap,
         result,
-        parsedParameters
+        parsedParameters,
       );
     }
+
     return result;
   }
 }
