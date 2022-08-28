@@ -1,6 +1,6 @@
 {
   "name": "construct-typed-parameters",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Type-safe parameter construction library. Useful for managing environment variables, aws parameter stores and more.",
   "type": "module",
   "main": "./lib/index.js",
